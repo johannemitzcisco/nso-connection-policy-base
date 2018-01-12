@@ -1,0 +1,108 @@
+module connection-policy-base {
+
+  namespace "http://example.com/connection-policy-base";
+  prefix connection-policy-base;
+
+  import topology-policy-base {
+    prefix tpb;
+  }
+  import network-policy-base {
+    prefix npb;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import tailf-common {
+    prefix tailf;
+  }
+  import tailf-ncs {
+    prefix ncs;
+  }
+
+  description
+    "Bla bla...";
+
+  revision 2017-11-29 {
+    description
+      "Initial revision.";
+  }
+
+  typedef physical-interface-type {
+    type enumeration {
+      enum "GigabitEthernet";
+      enum "TenGigabitEthernet";
+      enum "HundredGigE";4
+      enum "TenGigE";
+    }
+  }
+
+  augment /npb:network/npb:network-service/tpb:topology/tpb:connection {
+    list side {
+//      min-elements 1;
+      max-elements 2;
+      key name;
+      leaf name {
+        type enumeration {
+          enum "A";
+          enum "B";
+        }
+      }
+      leaf device {
+        type leafref {
+          path "../../../tpb:endpoint/tpb:topology-name";
+        }
+      }
+      list port {
+        min-elements 1;
+        max-elements 2;
+        key "interface-type interface-name";
+        leaf interface-type {
+          type union {
+            type physical-interface-type;
+          }
+        }
+        leaf interface-name {
+          type string;
+        }
+        leaf ip-address {
+          type inet:ipv4-address;
+        }
+        leaf ip-mask {
+          type inet:ipv4-address;
+        }
+        leaf peer-interface {
+          type string;
+        }
+      }
+    }
+    container type {
+      choice type {
+        container core-core {
+          leaf policy-name {
+            type leafref {
+              path "/npb:network/npb:policy-definitions/tpb:connection/core-core/name";
+            }
+          }
+        }
+      }
+    }
+    leaf cost {
+      type uint32;
+    }
+  }
+
+  augment /npb:network/npb:policy-definitions/tpb:connection {
+    list core-core {
+      key name;
+      leaf name {
+        type string;
+      }
+      container provider-core-router   {
+        leaf template {
+          type string;
+        }
+      }
+    }
+  }
+
+}
